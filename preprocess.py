@@ -2,7 +2,7 @@
 
 # – time since epoch
 # – time since start of day
-# – time as a categorical feature # TODO : How ?
+# – time as a categorical feature # TODO : How ? -> maybe already available in "TPER_HOUR" feature
 # – month
 # – week day
 # – week end : "WEEK_END" is already available as a feature
@@ -51,7 +51,10 @@ def createTimeFeatures(data):
     data.insert(1, "EPOCH", data["DATE_TIME"].apply(datetimeToEpoch))
     data.insert(2, "START_OF_DAY", data["DATE_TIME"].apply(datetimeToStartOfDay))
     data.insert(3, "MONTH", data["DATE_TIME"].apply(lambda datetime: datetime.month))
+    data["MONTH"]= data["MONTH"].astype('category')
     data.insert(4, "WEEKDAY", data["DATE_TIME"].apply(lambda datetime: datetime.weekday()))
+    data["WEEKDAY"] = data["WEEKDAY"].astype('category')
+    assert (data.dtypes["WEEKDAY"]=="category"),"WEEKDAY datatype not changed to categorical variable"
     del data["DATE"] # We no longer need that initial feature
     return data
 
@@ -65,5 +68,30 @@ def createCategoricalFeatures(data,feature):
     index = int(np.where(data.columns == feature)[0][0]) # Get the feature position
     for i in data[feature].unique():
         data.insert(index,i,(data[feature]==i)+0) # +0 : to cast into an array of int
+        data[i] = data[i].astype('category')
     del data[feature] # We no longer need that initial feature
+    return data
+
+def castToCategorialFeatures(data):
+    """
+    Categorical features are not automatically recognized by pandas,
+    so we manually set them as such.
+    :param data: a dataframe with a feature field.
+    :return: data: the dataframe with categorical features.
+    """
+    data["DAY_DS"] = data["DAY_DS"].astype('object')
+    for i in ["SPLIT_COD","ACD_COD","WEEK_END", "TPER_HOUR", "DAY_OFF"]:
+        data[i] = data[i].astype('category')
+    return data
+
+def normalize(data):
+    """
+       Function to normalize the dataframe (on the right columns)
+       :param data: a dataframe.
+       :return: data: the dataframe normalized on its 'float64' and 'int64' fields.
+    """
+    data_tmp = data.select_dtypes(include=['float64', 'int64'])
+    data_tmp = (data_tmp - data_tmp.mean()) / data_tmp.std()
+    which_rows = (data.dtypes == "int64") | (data.dtypes == "float64")
+    data.loc[:, which_rows] = data_tmp
     return data
