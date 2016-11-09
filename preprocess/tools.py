@@ -40,22 +40,34 @@ def datetimeToStartOfDay(datetime):
     """
     return (datetime-datetime.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds()
 
-def createTimeFeatures(data):
+def createTimeFeatures(data,features_to_create=["EPOCH","START_OF_DAY","MONTH","WEEKDAY"]):
     """
     A function to create different time features.
+    The parameter features_to_create enables to select only the features we want to add.
     :param data: a dataframe with a DATE field.
+    :param features_to_create: an array of strings like default ["EPOCH","START_OF_DAY","MONTH","WEEKDAY"]
     :type data: pandas.core.frame.DataFrame.
     :return: data: the modified dataframe.
     """
-    data.insert(0, "DATE_TIME", data["DATE"].apply(toDatetime))
-    data.insert(1, "EPOCH", data["DATE_TIME"].apply(datetimeToEpoch))
-    data.insert(2, "START_OF_DAY", data["DATE_TIME"].apply(datetimeToStartOfDay))
-    data.insert(3, "MONTH", data["DATE_TIME"].apply(lambda datetime: datetime.month))
-    data["MONTH"]= data["MONTH"].astype('category')
-    data.insert(4, "WEEKDAY", data["DATE_TIME"].apply(lambda datetime: datetime.weekday()))
-    data["WEEKDAY"] = data["WEEKDAY"].astype('category')
-    assert (data.dtypes["WEEKDAY"]=="category"),"WEEKDAY datatype not changed to categorical variable"
-    del data["DATE"] # We no longer need that initial feature
+    data.insert(0, "DATE_TIME", data["DATE"].apply(toDatetime));
+
+    # aF stands for applyFunction
+    # c stands for categorical variable
+    features = {
+        "EPOCH":{'aF' : datetimeToEpoch, 'c':False},
+        "START_OF_DAY":{'aF' : datetimeToStartOfDay, 'c':False},
+        "MONTH": {'aF' : lambda datetime: datetime.month, 'c':True},
+        "WEEKDAY": {'aF' : lambda datetime: datetime.weekday(), 'c':True}
+    }
+
+    i = 1 # Just for locating features
+    for key, aF,c in [(i,features[i]['aF'],features[i]['c']) for i in features_to_create]:
+        data.insert(i, key, data["DATE_TIME"].apply(aF));
+        if(c): data[key]= data[key].astype('category')
+        i += 1
+
+    del data["DATE"]
+    del data["DATE_TIME"]# We no longer need that initial feature
     return data
 
 def createCategoricalFeatures(data,feature):

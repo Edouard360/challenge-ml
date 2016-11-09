@@ -21,6 +21,10 @@ A machine learning challenge from the INF554 course
     * “day off” : "DAY_OFF" is already available as a feature
     * holidays (TODO)
 * Normalizing the data
+* Create DataProcess class. The huge size of the train data implies to separate the pipeline:
+    * we don't want to preprocess **each time** we run our main function
+    * the DataProcess class enables to **export in csv** format data already processed
+    * importing the newly created file enables us not to compute this preprocess task again
 
 ## What's next
 
