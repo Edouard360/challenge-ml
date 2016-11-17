@@ -54,16 +54,16 @@ def createTimeFeatures(data,features_to_create=["EPOCH","START_OF_DAY","MONTH","
     # aF stands for applyFunction
     # c stands for categorical variable
     features = {
-        "EPOCH":{'aF' : datetimeToEpoch, 'c':False},
-        "START_OF_DAY":{'aF' : datetimeToStartOfDay, 'c':False},
-        "MONTH": {'aF' : lambda datetime: datetime.month, 'c':True},
-        "WEEKDAY": {'aF' : lambda datetime: datetime.weekday(), 'c':True}
+        "EPOCH":{'aF' : datetimeToEpoch, 'type':'int'},
+        "START_OF_DAY":{'aF' : datetimeToStartOfDay, 'type':'int'},
+        "MONTH": {'aF' : lambda datetime: datetime.month, 'type':'category'},
+        "WEEKDAY": {'aF' : lambda datetime: datetime.weekday(), 'type':'category'}
     }
 
     i = 1 # Just for locating features
-    for key, aF,c in [(i,features[i]['aF'],features[i]['c']) for i in features_to_create]:
+    for key, aF, type in [(i,features[i]['aF'],features[i]['type']) for i in features_to_create]:
         data.insert(i, key, data["DATE_TIME"].apply(aF));
-        if(c): data[key]= data[key].astype('category')
+        if(type): data[key]= data[key].astype(type)
         i += 1
 
     del data["DATE"]
@@ -80,7 +80,7 @@ def createCategoricalFeatures(data,feature):
     index = int(np.where(data.columns == feature)[0][0]) # Get the feature position
     for i in data[feature].unique():
         data.insert(index,i,(data[feature]==i)+0) # +0 : to cast into an array of int
-        data[i] = data[i].astype('category')
+        data[i] = data[i].astype('int')
     del data[feature] # We no longer need that initial feature
     return data
 
@@ -93,7 +93,7 @@ def castToCategorialFeatures(data):
     """
     data["DAY_DS"] = data["DAY_DS"].astype('object')
     for i in ["SPLIT_COD","ACD_COD","WEEK_END", "TPER_HOUR", "DAY_OFF"]:
-        data[i] = data[i].astype('category')
+        data[i] = data[i].astype('int')
     return data
 
 def normalize(data):
