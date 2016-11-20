@@ -1,5 +1,8 @@
 # This is work in progress (wip)
-
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.feature_selection import SelectKBest
+from sklearn.feature_selection import chi2
+import numpy as np
 import matplotlib.pyplot as plt
 from preprocess.dataPreprocess import DataPreprocess
 
@@ -37,7 +40,6 @@ def exportMS():
     dataObj.data = data
     dataObj.exportToCsv('../train/Services_Medical_2011.csv')
 
-exportMS()
 def groupMS():
     '''
     Procedure to obtain the 'wip/Services_Medical_2011_grouped.csv' file
@@ -89,4 +91,37 @@ def plotDayOfWeekAveragedData():
         axarray[i].set_title(colnames[i])
 
 #plotDayOfWeekAveragedData()
-plotStartOfDayAveragedData()
+#plotStartOfDayAveragedData()
+
+data = dataObj.data
+data["ASS_ASSIGNMENT"]=(data["ASS_ASSIGNMENT"]=="Services")+0
+
+X = data.ix[:,(data.columns != 'ASS_ASSIGNMENT')&(data.columns != 'CSPL_RECEIVED_CALLS')].values
+# X = data.ix[:, data.columns != 'ASS_ASSIGNMENT'].values
+y_lda = data["ASS_ASSIGNMENT"].values
+
+y = data["CSPL_RECEIVED_CALLS"].values
+skb = SelectKBest(chi2, k=5)
+X_new = skb.fit_transform(X, y)
+print(skb.scores_)
+
+#data = data.loc[lambda df: df.EPOCH <= 1325370600000, :]
+
+clf = LinearDiscriminantAnalysis(solver = "eigen",n_components=2) # shrinkage and solver not supported
+clf.fit(X_new, y_lda)
+Xs = clf.transform(X_new)
+
+Xs1= Xs[np.where( y_lda == 1 )]
+Xs0= Xs[np.where( y_lda == 0 )]
+
+np.random.shuffle(Xs1)
+np.random.shuffle(Xs0)
+
+n = 50000
+plt.scatter(Xs0[:n,0], Xs0[:n,1],  c='b', alpha=0.1, label='Médical')
+plt.scatter(Xs1[:n,0], Xs1[:n,1],  c='r', alpha=0.1, label='Services')
+plt.legend(loc="best")
+plt.title("LDA on ASS_ASSIGNMENT to reduce dimensions")
+plt.show()
+
+print("fiddle")
