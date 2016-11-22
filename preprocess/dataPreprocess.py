@@ -1,8 +1,16 @@
 import pandas as pd
-from preprocess.tools import createTimeFeatures,createCategoricalFeatures, castToCategorialFeatures, normalize
+import numpy as np
+from sklearn import preprocessing
+from preprocess.tools import createTimeFeatures,createCategoricalFeatures, castToCategorialFeatures, normalize, normalizeWithMeanVariance
 
-class DataPreprocess():
-    def __init__(self,path,skiprows=None,nrows=None,usecols=None):
+def featureProcedure(data,delete=True):
+    data = createTimeFeatures(data, ["EPOCH", "START_OF_DAY", "WEEKDAY"],delete)
+    data = createCategoricalFeatures(data, "WEEKDAY",delete)
+    data = createCategoricalFeatures(data, "ASS_ASSIGNMENT",delete)
+    return data
+
+class Preprocess():
+    def __init__(self, path, sep, skiprows=None, nrows=None, usecols=None):
         """
         We could load our data both using either pandas (read_csv) or numpy (genfromtxt).
 
@@ -23,17 +31,48 @@ class DataPreprocess():
         :param nrows: Number of rows of file to read. (Useful for reading pieces of large files)
         :param usecols: array-like, default None
         """
-        self.data = pd.read_csv(path, sep=";", header=0, skiprows=skiprows, nrows=nrows, usecols=usecols)
+        self.sep = sep
+        self.data = pd.read_csv(path, sep=self.sep, header=0, skiprows=skiprows, nrows=nrows, usecols=usecols)
 
+    def exportToCsv(self,path):
+        self.data.to_csv(path, sep=self.sep,index=False)
+
+    def exportColumnsToCsv(self,path,columns):
+        self.data[columns].to_csv(path, sep=self.sep, index=False,encoding='utf-8')
+
+    def concatToCsv(self, path):
+        with open(path, 'a') as f:
+            self.data.to_csv(f, sep=self.sep,header=False, index=False)
+
+class DataPreprocess(Preprocess):
+    def preprocess(self, assignment = None):
+        data = self.data
+        if (assignment != None):
+            data = data[data['ASS_ASSIGNMENT'].apply(lambda x: x in assignment)]
+        data = data[['DATE', 'ASS_ASSIGNMENT', 'CSPL_RECEIVED_CALLS']]
+        data = data.groupby(["DATE", "ASS_ASSIGNMENT"]).sum()
+        data = data.reset_index()
+        data = featureProcedure(data)
+
+        self.scaler = preprocessing.StandardScaler()
+        self.scaler.fit(data[["EPOCH", "START_OF_DAY"]])
+        data[["EPOCH", "START_OF_DAY"]] = self.scaler.transform(data[["EPOCH", "START_OF_DAY"]])
+        data[["EPOCH", "START_OF_DAY"]] = round(data[["EPOCH", "START_OF_DAY"]], 4)
+
+        pathScaler = "../scaler.csv"
+        pd.DataFrame(data={'mean': self.scaler.mean_, 'var': self.scaler.var_}).to_csv(pathScaler,index=False)
+
+        data = data.loc[lambda df: df.EPOCH <= 1325370600000, :]
+        self.data = data
+
+class ResultPreprocess(Preprocess):
     def preprocess(self):
-        self.data = castToCategorialFeatures(self.data)
-        self.data = createCategoricalFeatures(self.data, "TPER_TEAM")
-        self.data = createTimeFeatures(self.data)
-        self.data = normalize(self.data)
+        self.data = featureProcedure(self.data,delete=False)
+        pathScaler = "../scaler.csv"
+        scalerInfo = pd.read_csv(pathScaler)
+        self.data[["EPOCH", "START_OF_DAY"]] = (self.data[["EPOCH", "START_OF_DAY"]] - scalerInfo['mean'].values)/ np.sqrt(scalerInfo['var'].values)
+        self.data[["EPOCH", "START_OF_DAY"]] = round(self.data[["EPOCH", "START_OF_DAY"]], 4)
 
-    def exportToCsv(self,file_name):
-        self.data.to_csv(file_name, sep=";",index=False)
+    def exportResult(self,path):
+        self.exportColumnsToCsv(path,['DATE','ASS_ASSIGNMENT','prediction'])
 
-    def concatToCsv(self, file_name):
-        with open(file_name, 'a') as f:
-            self.data.to_csv(f, sep=";",header=False, index=False)

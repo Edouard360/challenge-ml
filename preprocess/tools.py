@@ -40,7 +40,7 @@ def datetimeToStartOfDay(datetime):
     """
     return (datetime-datetime.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds()
 
-def createTimeFeatures(data,features_to_create=["EPOCH","START_OF_DAY","MONTH","WEEKDAY"]):
+def createTimeFeatures(data,features_to_create=["EPOCH","START_OF_DAY","MONTH","WEEKDAY"], delete = True):
     """
     A function to create different time features.
     The parameter features_to_create enables to select only the features we want to add.
@@ -65,12 +65,12 @@ def createTimeFeatures(data,features_to_create=["EPOCH","START_OF_DAY","MONTH","
         data.insert(i, key, data["DATE_TIME"].apply(aF));
         if(type): data[key]= data[key].astype(type)
         i += 1
-
-    del data["DATE"]
+    if(delete):
+        del data["DATE"]
     del data["DATE_TIME"]# We no longer need that initial feature
     return data
 
-def createCategoricalFeatures(data,feature):
+def createCategoricalFeatures(data,feature,delete=True):
     """
     A function to 'dummy code' and replace categorical feature
     :param data: a dataframe with a feature field.
@@ -79,9 +79,12 @@ def createCategoricalFeatures(data,feature):
     """
     index = int(np.where(data.columns == feature)[0][0]) # Get the feature position
     for i in data[feature].unique():
-        data.insert(index,i,(data[feature]==i)+0) # +0 : to cast into an array of int
-        data[i] = data[i].astype('int')
-    del data[feature] # We no longer need that initial feature
+        name = str(feature) + "_" + str(i)
+        data.insert(index,name,(data[feature]==i)+0) # +0 : to cast into an array of int
+        data[name] = data[name].astype('int')
+    # We no longer need that initial feature
+    if (delete):
+        del data[feature]
     return data
 
 def castToCategorialFeatures(data):
@@ -107,3 +110,13 @@ def normalize(data):
     which_rows = (data.dtypes == "int64") | (data.dtypes == "float64")
     data.loc[:, which_rows] = data_tmp
     return data
+
+def normalizeWithMeanVariance(column,mean,var):
+    """
+       Function to normalize the dataframe (on the right columns)
+       :param data: a dataframe.
+       :param mean: desired mean.
+       :param var: desired variance.
+    """
+    column = (column - mean) / var
+    return column
