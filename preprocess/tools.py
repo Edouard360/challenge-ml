@@ -111,12 +111,9 @@ def normalize(data):
     data.loc[:, which_rows] = data_tmp
     return data
 
-def normalizeWithMeanVariance(column,mean,var):
-    """
-       Function to normalize the dataframe (on the right columns)
-       :param data: a dataframe.
-       :param mean: desired mean.
-       :param var: desired variance.
-    """
-    column = (column - mean) / var
-    return column
+def createDayNightFeature(data):
+    data["NIGHT_TIME"] = (data["START_OF_DAY"]<=7*3600) + (data["START_OF_DAY"]>=23*3600) + 0
+    data["LUNCH_TIME"] = (data["START_OF_DAY"] >= 12 * 3600) * (data["START_OF_DAY"] <= 14 * 3600) + 0
+    data["MORNING_TIME"] = (data["START_OF_DAY"] >= 10 * 3600) * (data["START_OF_DAY"] <= 12 * 3600) + 0
+    data["AFTERNOON_TIME"] = (data["START_OF_DAY"] >= 14 * 3600) * (data["START_OF_DAY"] <= 17 * 3600) + 0
+    return data

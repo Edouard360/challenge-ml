@@ -1,16 +1,29 @@
-# This folder is a memo help for functions I have come across that seem relevant to me
-
-
+# This file is a memo
 X=[]
 y=[]
+
+# Features not to forget
+"DAY_OFF"
+
+# Half the data is at row
+firstRow = 0 # The index of the first row to read
+lastRow = 5000000 # ~ Half the data (to make sure we have every rows in 2011)
 
 # Matrix Rank
 import numpy as np
 np.linalg.matrix_rank(X)
 
+# _________________ #
+#      sklearn      #
+# _________________ #
+
 # Using preprocessing
 from sklearn import preprocessing
 enc = preprocessing.OneHotEncoder()
+
+# Splitting test and train
+from sklearn.model_selection import train_test_split
+X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.33, random_state=2)
 
 # Using feature_selection
 from sklearn.feature_selection import SelectKBest
@@ -24,9 +37,8 @@ from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 clf = LinearDiscriminantAnalysis(solver = "eigen",n_components=2)
 Xs = clf.fit_transform(X, y)
 
-# Using the decision tree regressor
 
-# Using the gradient boosting regressor ## TODO : check out the loss function
+# Using the gradient boosting regressor # TODO : check out the loss function
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.ensemble.partial_dependence import plot_partial_dependence
@@ -35,13 +47,10 @@ clf = GradientBoostingRegressor(n_estimators=100, max_depth=4, learning_rate=0.1
 clf.fit(X, y); clf.feature_importances_
 fig, axs = plot_partial_dependence(clf, X, [0,1,(1,2),(2,3)], feature_names=['A','B'], n_jobs=3, grid_resolution=50)
 
-# Scatter plotting
-import matplotlib.pyplot as plt
-Xs = Xs[np.where( y == 1 )]
-n = 5
-plt.scatter(Xs[:n,0], Xs[:n,1],  c='b', alpha=0.1)
+# _________________ #
+#     DATAFRAME     #
+# _________________ #
 
-# The dataframe
 data=[]
 
 # TPER_TEAM and DAY_WE_DS for categorical features
@@ -49,7 +58,10 @@ from preprocess.tools import createCategoricalFeatures
 data = createCategoricalFeatures(data,'TPER_TEAM')
 data = createCategoricalFeatures(data,'DAY_WE_DS')
 
-#Selecting
+# SELECT ONLY THOSE WITH EPOCH TIME
+data = data.loc[lambda df: df.EPOCH <= 'epoch_time', :]
+
+# Selecting
 X = data.ix[:,(data.columns != 'ASS_ASSIGNMENT')&(data.columns != 'CSPL_RECEIVED_CALLS')].values
 
 # Useful to replace columns
@@ -58,20 +70,9 @@ cols.insert(1, cols.pop(cols.index('ASS_ASSIGNMENT')))
 data = data.ix[:, cols]
 
 # Dropping columns : the object type, the na, and the useless ones
-data = data.drop(data.select_dtypes(include=['object']).ix[:, 1:].columns, axis=1)
 data = data.dropna(axis=1)
+data = data.drop(data.select_dtypes(include=['object']).ix[:, 1:].columns, axis=1)
 data = data.drop(['TPER_HOUR', 'SPLIT_COD', 'ACD_COD'], axis=1)
-
-# Plot on same axis (shared x-axis)
-data = data.groupby(["START_OF_DAY","ASS_ASSIGNMENT"]).mean().reset_index()
-colnames = []
-f, axarray = plt.subplots(len(colnames), sharex=True)
-for i in range(len(colnames)):
-    axarray[i].plot()
-    axarray[i].set_title()
-
-# Features not to forget
-"DAY_OFF"
 
 # Using pandas index
 # .ix is the most general and will support any of the inputs in .loc and .iloc.
@@ -85,3 +86,32 @@ pd.DataFrame(columns=list('ABCD'))
 
 # Aggregating with pandas
 data.groupby(["WEEKDAY"]).agg({'CSPL_RECEIVED_CALLS' : lambda x: np.sum(x)/56.,'Jours' : np.mean})
+data.groupby(["WEEKDAY"]).agg([np.mean,np.std])
+
+#Export the scaler to csv file
+scaler = preprocessing.StandardScaler()
+pathScaler = "../preprocess/scaler.csv"
+pd.DataFrame(data={'mean': scaler.mean_, 'var': scaler.var_}).to_csv(pathScaler,index=False)
+
+# _________________ #
+#       PLOT        #
+# _________________ #
+
+# Plot figure
+import matplotlib.pyplot as plt
+plt.figure(figsize=(15,10)); plt.xlim((1, 12)); plt.ylim(0,5)
+
+# Plot on same axis (shared x-axis)
+colnames = []
+f, axarray = plt.subplots(len(colnames), sharex=True)
+for i in range(len(colnames)):
+    axarray[i].plot()
+    axarray[i].set_title()
+
+# Scatter plotting
+Xs = Xs[np.where( y == 1 )]
+n = 5
+plt.scatter(Xs[:n,0], Xs[:n,1],  c='b', alpha=0.1)
+
+# Showfliers option in boxplot(showfliers=False)
+

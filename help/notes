@@ -1,0 +1,11 @@
+We could load our data both using either pandas (read_csv) or numpy (genfromtxt).
+
+Using pandas,
+Type of output : pandas.core.frame.DataFrame (type(data))
+Valid operations : data.columns, data.index, data["TPER_TEAM"].values, data[["CSPL_RECEIVED_CALLS","CSPL_CALLS"]]
+
+Using numpy,
+Type of the output : ndarray
+As seen in previous TD, it is of best practice to differentiate between integers and strings
+indexInt = chain((1, 3, 6, 7, 8), range(18, 84))
+indexStr = chain((0,2,4,5),range(10,18)) (be careful with encoding in ascii)

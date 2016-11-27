@@ -44,6 +44,50 @@ A machine learning challenge from the INF554 course
     * 22/12 : 28/12 (2013)
 * Only 18 assignments are necessary!
 
+## Integrating the Linex function
+
+After digging into scikit-learn, I found that the quickest answer to this problem was to add my functions alongside the code. I think the best practice in this case would have been to fork the sklearn repo...
+
+#### Explaining **/help/hackGradientBoosting**:
+
+**LinexEstimator**: 
+
+* **fit**: provides one optimal prediction value, for the leaf of the tree (a leaf only predicts one value).
+
+* **predict**: gives a vector of the optimal value computed in fit. We are at the leaf, so the vector is uniform.
+
+**LinexLossFunction**:
+
+ * **\_\_call\_\_**: magic method. Computes the error according to linex function.
+
+ * **negative\_gradient**: gives the negatives gradient of the function (cf. gradient boosting) 
+ 
+  * grad\_factor is a scaling term for the gradient to be significant. (Here grad\_factor = 100)
+
+ * **\_update\_terminal\_region**: Update on leaf to predict its optimal value (*each leaf* predicts only *one value*) for our LinexEstimator. Exactly the same way as LinexEstimator does.
+
+#### Explaining **/help/hackCriterion**:
+
+You will have to recompile sklearn for this to take effect.
+
+Under the hood, the regression trees are built according to a regression criterion, that is **variance-oriented**. 
+
+That is far from **how we would like the trees to be built**, ie using a criterion suited to our case, that is, to the linEx loss.
+
+Recomputing impurity according to this loss, gives **significant improvement** in our final linEx score.
+ 
+This is simply because the tree is built accordingly, seeking to **minimize** that loss.
+
+
+
 ## What's next
 
-* Dimensionality reduction
+* Handling holidays (preprocess). ==> Etienne
+* Handling day-offs (preprocess). ==> Etienne
+* Adaboost tests, combined with our optimized trees. Finding the right formula for updating weights - requires computing power ==> Etienne 
+
+___
+
+* Dig in the RandomForest code (it looks like RandomForest only take 'mse' as a criterion) ==> Raph
+* Autoregressive models (Time series analysis), as suggested by the project ==> Raph
+* Maybe SVR (support vector regression) ==> Raph, as you suggested
