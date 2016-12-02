@@ -1,13 +1,12 @@
 import pandas as pd
-import numpy as np
 from sklearn import preprocessing
-from wip.tools import createTimeFeatures,createCategoricalFeatures, createDayNightFeature
+from preprocess.tools import createTimeFeatures,createCategoricalFeatures, createDayNightFeature
 
 def featureProcedure(data,delete=True):
-    data = createTimeFeatures(data, ["EPOCH", "START_OF_DAY", "WEEKDAY","MONTH","HOLYDAYS"],delete)
+    data = createTimeFeatures(data, ["EPOCH", "START_OF_DAY", "WEEKDAY","MONTH", "HOLIDAY"],delete)
     #data = createDayNightFeature(data)
     data = createCategoricalFeatures(data, "WEEKDAY",delete)
-    data = createCategoricalFeatures(data, "HOLYDAYS",delete)
+    data = createCategoricalFeatures(data, "HOLIDAY", delete)
     #data = createCategoricalFeatures(data, "MONTH", delete)
     data = createCategoricalFeatures(data, "ASS_ASSIGNMENT",delete)
     return data
@@ -62,3 +61,4 @@ class ResultPreprocess(Preprocess):
 
     def exportResult(self,path):
         self.exportColumnsToCsv(path,['DATE','ASS_ASSIGNMENT','prediction'])
+

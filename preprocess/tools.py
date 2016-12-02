@@ -14,6 +14,8 @@
 # We therefore use the datetime package to get a date object - easier to work with
 import datetime
 import numpy as np
+import pandas as pd
+from preprocess.path import *
 
 def toDatetime(date):
     """
@@ -40,7 +42,7 @@ def datetimeToStartOfDay(datetime):
     """
     return (datetime-datetime.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds()
 
-def createTimeFeatures(data,features_to_create=["EPOCH","START_OF_DAY","MONTH","WEEKDAY"], delete = True):
+def createTimeFeatures(data,features_to_create=["EPOCH","START_OF_DAY","MONTH","WEEKDAY","HOLIDAY"], delete = True):
     """
     A function to create different time features.
     The parameter features_to_create enables to select only the features we want to add.
@@ -51,13 +53,16 @@ def createTimeFeatures(data,features_to_create=["EPOCH","START_OF_DAY","MONTH","
     """
     data.insert(0, "DATE_TIME", data["DATE"].apply(toDatetime));
 
+    cal = createHolidayCalendar(PATH_HOLIDAY);
+
     # aF stands for applyFunction
     # c stands for categorical variable
     features = {
         "EPOCH":{'aF' : datetimeToEpoch, 'type':'int'},
         "START_OF_DAY":{'aF' : datetimeToStartOfDay, 'type':'int'},
         "MONTH": {'aF' : lambda datetime: datetime.month, 'type':'category'},
-        "WEEKDAY": {'aF' : lambda datetime: datetime.weekday(), 'type':'category'}
+        "WEEKDAY": {'aF' : lambda datetime: datetime.weekday(), 'type':'category'},
+        "HOLIDAY": {'aF' : lambda datetime: isInHoliday(cal,datetime), 'type':'category'}
     }
 
     i = 1 # Just for locating features
@@ -65,6 +70,7 @@ def createTimeFeatures(data,features_to_create=["EPOCH","START_OF_DAY","MONTH","
         data.insert(i, key, data["DATE_TIME"].apply(aF));
         if(type): data[key]= data[key].astype(type)
         i += 1
+
     if(delete):
         del data["DATE"]
     del data["DATE_TIME"]# We no longer need that initial feature
@@ -80,7 +86,9 @@ def createCategoricalFeatures(data,feature,delete=True):
     index = int(np.where(data.columns == feature)[0][0]) # Get the feature position
     for i in data[feature].unique():
         name = str(feature) + "_" + str(i)
-        data.insert(index,name,(data[feature]==i)+0) # +0 : to cast into an array of int
+        #data.insert(index,name,(data[feature]==i)+0) # +0 : to cast into an array of int
+        if (not(feature == "HOLIDAY" and str(i) =="")): # Don't understand this line
+            data.insert(index,name,(data[feature]==i)+0) # +0 : to cast into an array of int
         data[name] = data[name].astype('int')
     # We no longer need that initial feature
     if (delete):
@@ -117,3 +125,25 @@ def createDayNightFeature(data):
     data["MORNING_TIME"] = (data["START_OF_DAY"] >= 10 * 3600) * (data["START_OF_DAY"] <= 12 * 3600) + 0
     data["AFTERNOON_TIME"] = (data["START_OF_DAY"] >= 14 * 3600) * (data["START_OF_DAY"] <= 17 * 3600) + 0
     return data
+
+def isInHoliday(cal, dt):
+    """
+    Function to create new features corresponding to whether the epoch is during holiday or not.
+    :param  cal: the calendar dataframe object.
+    :param  dt: a datetime object.
+    :return str: a string of the name of the holiday, its value is "NONE" if the argument is not within any holiday.
+    """
+    row = cal[((dt < cal["DATETIME_END"]) & (dt > cal["DATETIME_BEGIN"]))]
+    return "NONE" if row.empty else row["NAME"].values[0]
+
+def createHolidayCalendar(path):
+    """
+    Create a dataframe from the calendar of the holiday
+    :param  path: a string containing the path to the .csv file
+    :return cal : the corresponding dataframe.
+    """
+    cal = pd.read_csv(path,";")
+    cal.insert(0,"DATETIME_END",cal["DATE_END"].apply(toDatetime))
+    cal.insert(0,"DATETIME_BEGIN",cal["DATE_BEGIN"].apply(toDatetime))
+    del cal["DATE_END"]; del cal["DATE_BEGIN"]
+    return cal

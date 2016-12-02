@@ -1,4 +1,5 @@
 # This file is a memo
+
 X=[]
 y=[]
 
@@ -37,8 +38,7 @@ from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 clf = LinearDiscriminantAnalysis(solver = "eigen",n_components=2)
 Xs = clf.fit_transform(X, y)
 
-
-# Using the gradient boosting regressor # TODO : check out the loss function
+# Using the gradient boosting regressor
 from sklearn.tree import DecisionTreeRegressor
 from sklearn.ensemble import GradientBoostingRegressor
 from sklearn.ensemble.partial_dependence import plot_partial_dependence
@@ -46,6 +46,15 @@ regr = DecisionTreeRegressor(max_depth=4)
 clf = GradientBoostingRegressor(n_estimators=100, max_depth=4, learning_rate=0.1, loss='huber', random_state=1)
 clf.fit(X, y); clf.feature_importances_
 fig, axs = plot_partial_dependence(clf, X, [0,1,(1,2),(2,3)], feature_names=['A','B'], n_jobs=3, grid_resolution=50)
+
+# Doing cross validation
+from sklearn.model_selection import ShuffleSplit
+ss = ShuffleSplit(n_splits=5, test_size=0.2,random_state=2)
+list_train_test = [(X_train[train_index],X_train[test_index],y_train[train_index],y_train[test_index]) for (train_index, test_index) in ss.split(X_train)]
+for X_train, X_test,y_train,y_test in list_train_test:
+    linEx = []
+    clf.fit(X_train,y_train)
+    print(linEx(y_test,clf.predict(X_test)))
 
 # _________________ #
 #     DATAFRAME     #
