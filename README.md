@@ -19,7 +19,7 @@ A machine learning challenge from the INF554 course
     * week end : "WEEK_END" is already available as a feature
     * night/day : "Jours/Nuit" is already available as a feature
     * “day off” : "DAY_OFF" is already available as a feature
-    * holidays (TODO)
+    * holidays 
 * Normalizing the data
 * Create DataProcess class. The huge size of the train data implies to separate the pipeline:
     * we don't want to preprocess **each time** we run our main function
