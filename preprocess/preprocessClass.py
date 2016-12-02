@@ -56,6 +56,7 @@ class DataPreprocess(Preprocess):
 class ResultPreprocess(Preprocess):
     def preprocess(self,scaler):
         self.data = featureProcedure(self.data,delete=False)
+        self.data['HOLIDAY_PRINTEMPS'] = 0
         self.data[["EPOCH", "START_OF_DAY"]] = scaler.transform(self.data[["EPOCH", "START_OF_DAY"]])
         self.data[["EPOCH", "START_OF_DAY"]] = round(self.data[["EPOCH", "START_OF_DAY"]], 4)
 

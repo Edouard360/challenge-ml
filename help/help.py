@@ -1,14 +1,22 @@
 # This file is a memo
-
 X=[]
 y=[]
 
 # Features not to forget
 "DAY_OFF"
 
+# Iterate over array in parallel
+array1=[];array2=[]
+zip(array1,array2)
+
 # Half the data is at row
 firstRow = 0 # The index of the first row to read
 lastRow = 5000000 # ~ Half the data (to make sure we have every rows in 2011)
+
+# Logging
+import logging
+logging.basicConfig(filename="regression/config_result.log",level=logging.DEBUG)
+logging.info("Test")
 
 # Matrix Rank
 import numpy as np
@@ -55,6 +63,11 @@ for X_train, X_test,y_train,y_test in list_train_test:
     linEx = []
     clf.fit(X_train,y_train)
     print(linEx(y_test,clf.predict(X_test)))
+
+# Export graphiz
+from sklearn.tree import export_graphviz
+d = DecisionTreeRegressor(max_depth=3)
+export_graphviz(d,out_file='tree.dot')
 
 # _________________ #
 #     DATAFRAME     #
