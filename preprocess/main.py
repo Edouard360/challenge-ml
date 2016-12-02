@@ -7,8 +7,8 @@ ass = ["CMS","Crises","Domicile","Gestion","Gestion - Accueil Telephonique","Ges
 
 dataObj = DataPreprocess(PATH_TRAINING_DATA, ";")
 scaler = dataObj.preprocess(assignment = ass)
-dataObj.exportToCsv("output/trainPreprocessed2.csv")
+dataObj.exportToCsv("output/trainPreprocessed.csv")
 
 dataRes = ResultPreprocess(PATH_TEST_DATA, "\t")
 dataRes.preprocess(scaler)
-dataRes.exportToCsv("output/submissionPreprocessed2.txt")
+dataRes.exportToCsv("output/submissionPreprocessed.txt")
