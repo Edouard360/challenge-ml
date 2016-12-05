@@ -65,9 +65,13 @@ for X_train, X_test,y_train,y_test in list_train_test:
     print(linEx(y_test,clf.predict(X_test)))
 
 # Export graphiz
+rgr = []
 from sklearn.tree import export_graphviz
 d = DecisionTreeRegressor(max_depth=3)
-export_graphviz(d,out_file='tree.dot')
+columns = rgr.dataObj.data.columns
+columns = columns[(columns != 'CSPL_RECEIVED_CALLS')]
+export_graphviz(d,out_file='tree.dot',feature_names=columns)
+
 
 # _________________ #
 #     DATAFRAME     #
@@ -103,6 +107,10 @@ data = data.drop(['TPER_HOUR', 'SPLIT_COD', 'ACD_COD'], axis=1)
 import pandas as pd
 pd.concat([data.loc[:, "EPOCH":"DAY_OFF"], data.loc[:, "CSPL_RECEIVED_CALLS"]], axis=1)
 
+# Merge dataframe according to max
+res1 = [];res2=[]
+pd.DataFrame(data ={"res2": res2.data['prediction'].values,"res1":res1.data["prediction"].values}).max(axis=1)
+
 # DataFrame with columns names
 pd.DataFrame(columns=list('ABCD'))
 
@@ -137,3 +145,10 @@ plt.scatter(Xs[:n,0], Xs[:n,1],  c='b', alpha=0.1)
 
 # Showfliers option in boxplot(showfliers=False)
 
+# _________________ #
+#      PROJECT      #
+# _________________ #
+#
+# In case we needed to improve a result with <= values
+dataRes = []
+dataRes.data.loc[dataRes.data["prediction"] <= 0, "prediction"] = 0

@@ -1,6 +1,6 @@
 import numpy as np
-ass = ["CMS","Crises","Domicile","Gestion","Gestion - Accueil Telephonique","Gestion Assurances","Gestion Relation Clienteles","Gestion Renault","Japon","Médical","Nuit","RENAULT","Regulation Medicale","SAP","Services","Tech. Axa","Tech. Inter","Téléphonie"]
 
+ass = ['CMS','Crises','Domicile','Gestion','Gestion - Accueil Telephonique','Gestion Assurances','Gestion Relation Clienteles','Gestion Renault','Japon','Médical','Nuit','RENAULT','Regulation Medicale','SAP','Services','Tech. Axa','Tech. Inter','Téléphonie','Tech. Total','Mécanicien','CAT','Manager','Gestion Clients','Gestion DZ','RTC','Prestataires']
 
 def split(dataframe):
     """

@@ -19,18 +19,23 @@ class Regression():
         self.r.fit(X_train, y_train)
         score = linEx(y_test,self.r.predict(X_test))
         print("The final score is :"+str(score))
+        return score
 
     def testOnTrainDataIndividual(self, test_size = 0.1):
-        trainDf, testDf = trainTestSplit(self.dataObj.data,0.2)
+        trainDf, testDf = trainTestSplit(self.dataObj.data,test_size)
         score = 0
         for train, res in zip(splitDummy(trainDf), splitDummy(testDf)):
             columns = train.columns[(train.columns != 'CSPL_RECEIVED_CALLS') & (train.columns != 'MONTH')]
             X_train = train[columns].values
             y_train = train["CSPL_RECEIVED_CALLS"].values
             X_test = res[columns].values
+            if((X_train.shape[0] == 0) | (X_test.shape[0] == 0)):
+                continue
             self.r.fit(X_train, y_train)
-            score += linEx(res["CSPL_RECEIVED_CALLS"].values, self.r.predict(X_test))
+            prediction = self.r.predict(X_test)
+            score += linEx(res["CSPL_RECEIVED_CALLS"].values, prediction)
         print("The final score is :"+str(score))
+        return score
 
     def exportPredictionMultiple(self,path):
         columns = self.dataObj.data.columns[(self.dataObj.data.columns != 'CSPL_RECEIVED_CALLS')]
@@ -47,7 +52,9 @@ class Regression():
             X_train = train[columns].values
             y_train = train["CSPL_RECEIVED_CALLS"].values
             X = res[columns].values
-
+            if ((X_train.shape[0] == 0)):
+                continue
             self.r.fit(X_train, y_train)
             self.dataRes.data.loc[res.index, "prediction"] = self.r.predict(X)
         self.dataRes.exportResult(path)
+
