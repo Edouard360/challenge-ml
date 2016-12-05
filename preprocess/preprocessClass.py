@@ -3,10 +3,11 @@ from sklearn import preprocessing
 from preprocess.tools import createTimeFeatures,createCategoricalFeatures, createDayNightFeature
 
 def featureProcedure(data,delete=True):
-    data = createTimeFeatures(data, ["EPOCH", "START_OF_DAY", "WEEKDAY","MONTH", "HOLIDAY"],delete)
+    data = createTimeFeatures(data, ["EPOCH", "START_OF_DAY", "WEEKDAY","MONTH", "HOLIDAY","DAY_OFF"],delete)
     #data = createDayNightFeature(data)
     data = createCategoricalFeatures(data, "WEEKDAY",delete)
     data = createCategoricalFeatures(data, "HOLIDAY", delete)
+    data = createCategoricalFeatures(data, "DAY_OFF", delete)
     #data = createCategoricalFeatures(data, "MONTH", delete)
     data = createCategoricalFeatures(data, "ASS_ASSIGNMENT",delete)
     return data
@@ -55,11 +56,10 @@ class DataPreprocess(Preprocess):
 
 class ResultPreprocess(Preprocess):
     def preprocess(self,scaler):
-        self.data = featureProcedure(self.data,delete=False)
-        self.data['HOLIDAY_PRINTEMPS'] = 0
+        self.data = featureProcedure(self.data,delete=True)
+        # self.data['HOLIDAY_PRINTEMPS'] = 0
         self.data[["EPOCH", "START_OF_DAY"]] = scaler.transform(self.data[["EPOCH", "START_OF_DAY"]])
         self.data[["EPOCH", "START_OF_DAY"]] = round(self.data[["EPOCH", "START_OF_DAY"]], 4)
 
     def exportResult(self,path):
         self.exportColumnsToCsv(path,['DATE','ASS_ASSIGNMENT','prediction'])
-

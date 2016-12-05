@@ -8,7 +8,7 @@
 # – week end : "WEEK_END" is already available as a feature
 # – night/day : "Jours/Nuit" is already available as a feature
 # – “day off” : "DAY_OFF" is already available as a feature
-# – holidays # TODO : Take holiday data from outside sources.
+# – holidays : "HOLIDAY" is taken from external/holidays.csv.
 
 # Given a date in the format : '2011-04-24 01:30:00.000'
 # We therefore use the datetime package to get a date object - easier to work with
@@ -42,7 +42,7 @@ def datetimeToStartOfDay(datetime):
     """
     return (datetime-datetime.replace(hour=0, minute=0, second=0, microsecond=0)).total_seconds()
 
-def createTimeFeatures(data,features_to_create=["EPOCH","START_OF_DAY","MONTH","WEEKDAY","HOLIDAY"], delete = True):
+def createTimeFeatures(data,features_to_create=["EPOCH","START_OF_DAY","MONTH","WEEKDAY","HOLIDAY","DAY_OFF"], delete = True):
     """
     A function to create different time features.
     The parameter features_to_create enables to select only the features we want to add.
@@ -53,7 +53,8 @@ def createTimeFeatures(data,features_to_create=["EPOCH","START_OF_DAY","MONTH","
     """
     data.insert(0, "DATE_TIME", data["DATE"].apply(toDatetime));
 
-    cal = createHolidayCalendar(PATH_HOLIDAY);
+    calHoliday = createHolidayCalendar(PATH_HOLIDAY);
+    calDayOff = createHolidayCalendar(PATH_DAYOFF);
 
     # aF stands for applyFunction
     # c stands for categorical variable
@@ -62,7 +63,8 @@ def createTimeFeatures(data,features_to_create=["EPOCH","START_OF_DAY","MONTH","
         "START_OF_DAY":{'aF' : datetimeToStartOfDay, 'type':'int'},
         "MONTH": {'aF' : lambda datetime: datetime.month, 'type':'category'},
         "WEEKDAY": {'aF' : lambda datetime: datetime.weekday(), 'type':'category'},
-        "HOLIDAY": {'aF' : lambda datetime: isInHoliday(cal,datetime), 'type':'category'}
+        "HOLIDAY": {'aF' : lambda datetime: isInHoliday(calHoliday,datetime), 'type':'category'},
+        "DAY_OFF": {'aF' : lambda datetime: isInHoliday(calDayOff,datetime), 'type':'category'}
     }
 
     i = 1 # Just for locating features
@@ -138,7 +140,7 @@ def isInHoliday(cal, dt):
 
 def createHolidayCalendar(path):
     """
-    Create a dataframe from the calendar of the holiday
+    Create a dataframe from the calendar of the holiday. This can also be used for days off.
     :param  path: a string containing the path to the .csv file
     :return cal : the corresponding dataframe.
     """
