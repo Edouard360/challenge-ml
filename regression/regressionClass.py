@@ -1,12 +1,12 @@
-from preprocess.preprocessClass import DataPreprocess,ResultPreprocess
+from preprocessing.preprocessingClass import TrainPreprocessing,SubmissionPreprocessing
 from regression.score import linEx
 from regression.tools import splitDummy,split,trainTestSplit
 from sklearn.model_selection import train_test_split
 
 class Regression():
     def __init__(self,pathPreprocessed,pathSubmission):
-        self.dataObj = DataPreprocess(pathPreprocessed, ";")
-        self.dataRes = ResultPreprocess(pathSubmission, "\t")
+        self.dataObj = TrainPreprocessing(pathPreprocessed, ";")
+        self.dataRes = SubmissionPreprocessing(pathSubmission, "\t")
 
     def updateRegressor(self, regressor):
         self.r = regressor

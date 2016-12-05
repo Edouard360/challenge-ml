@@ -80,7 +80,7 @@ export_graphviz(d,out_file='tree.dot',feature_names=columns)
 data=[]
 
 # TPER_TEAM and DAY_WE_DS for categorical features
-from preprocess.tools import createCategoricalFeatures
+from preprocessing.tools import createCategoricalFeatures
 data = createCategoricalFeatures(data,'TPER_TEAM')
 data = createCategoricalFeatures(data,'DAY_WE_DS')
 
@@ -120,7 +120,7 @@ data.groupby(["WEEKDAY"]).agg([np.mean,np.std])
 
 #Export the scaler to csv file
 scaler = preprocessing.StandardScaler()
-pathScaler = "../preprocess/scaler.csv"
+pathScaler = "../preprocessing/scaler.csv"
 pd.DataFrame(data={'mean': scaler.mean_, 'var': scaler.var_}).to_csv(pathScaler,index=False)
 
 # _________________ #

@@ -1,17 +1,18 @@
 import pandas as pd
 from sklearn import preprocessing
-from preprocess.tools import createTimeFeatures,createCategoricalFeatures, createDayNightFeature
+from preprocessing.tools import createTimeFeatures,createCategoricalFeatures, createDayNightFeature
 
 def featureProcedure(data,delete=True):
-    data = createTimeFeatures(data, ["EPOCH", "START_OF_DAY", "WEEKDAY","MONTH", "HOLIDAY"],delete)
+    data = createTimeFeatures(data, ["EPOCH", "START_OF_DAY", "WEEKDAY","MONTH", "HOLIDAY","DAY_OFF"],delete)
     #data = createDayNightFeature(data)
     data = createCategoricalFeatures(data, "WEEKDAY",delete)
     data = createCategoricalFeatures(data, "HOLIDAY", delete)
+    data = createCategoricalFeatures(data, "DAY_OFF", delete)
     #data = createCategoricalFeatures(data, "MONTH", delete)
     data = createCategoricalFeatures(data, "ASS_ASSIGNMENT",delete)
     return data
 
-class Preprocess():
+class Preprocessing():
     def __init__(self, path, sep, skiprows=None, nrows=None, usecols=None):
         """
         For convenience, we will use pandas, as suggested by the project directives
@@ -34,7 +35,7 @@ class Preprocess():
         with open(path, 'a') as f:
             self.data.to_csv(f, sep=self.sep,header=False, index=False)
 
-class DataPreprocess(Preprocess):
+class TrainPreprocessing(Preprocessing):
     def preprocess(self, assignment = None):
         data = self.data
         if (assignment != None):
@@ -53,13 +54,12 @@ class DataPreprocess(Preprocess):
 
         return scaler
 
-class ResultPreprocess(Preprocess):
+class SubmissionPreprocessing(Preprocessing):
     def preprocess(self,scaler):
-        self.data = featureProcedure(self.data,delete=False)
+        self.data = featureProcedure(self.data,delete=True)
         self.data['HOLIDAY_PRINTEMPS'] = 0
         self.data[["EPOCH", "START_OF_DAY"]] = scaler.transform(self.data[["EPOCH", "START_OF_DAY"]])
         self.data[["EPOCH", "START_OF_DAY"]] = round(self.data[["EPOCH", "START_OF_DAY"]], 4)
 
     def exportResult(self,path):
         self.exportColumnsToCsv(path,['DATE','ASS_ASSIGNMENT','prediction'])
-

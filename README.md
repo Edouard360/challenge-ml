@@ -2,6 +2,11 @@
 
 A machine learning challenge from the INF554 course
 
+I forked the scikit-learn repository [here](https://github.com/Edouard360/scikit-learn/). Clone or download it. Build on your machine by doing `cd scikit-learn` and `make`. 
+After this, you can either put the sklearn repository at the root of your project, or temporarily replace the sklearn repo.
+
+If you want to see the exact changes, you can go [here](https://github.com/Edouard360/scikit-learn/commit/b00d6f00c3a207fdfe1bb5a5717deeeda0e1a7a8).
+
 ## What has been done
 
 ### Preprocessing

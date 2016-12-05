@@ -2,7 +2,7 @@ from sklearn.ensemble import GradientBoostingRegressor,RandomForestRegressor
 from sklearn.tree import DecisionTreeRegressor
 from regression.regressionClass import Regression
 
-rgr = Regression("preprocess/output/trainPreprocessed.csv","preprocess/output/submissionPreprocessed.txt")
+rgr = Regression("preprocessing/output/trainPreprocessed.csv","preprocessing/output/submissionPreprocessed.txt")
 
 learning_rate = 0.4
 n_estimators = 50
