@@ -12,24 +12,104 @@
 
 \usepackage{amsmath,amsfonts,amssymb}
 
+\usepackage{array}
+
 \usepackage{polytechnique}
 
-\title{AXA Data Challenge}
-\subtitle{Final Report}
+  \title{AXA Data Challenge}
+  \subtitle{Final Report}
 
-\author{Édouard MEHLMAN\\
-      Raphaël OLIVIER\\
-      Étienne HOUZÉ}
+  \author{Édouard MEHLMAN\\
+        Raphaël OLIVIER\\
+        Étienne HOUZÉ}
 
-\date{December 2016}
+  \date{December 2016}
 
 \begin{document}
-\maketitle
-\section{Problematics}
 
-\section{Solutions}
+  \maketitle
 
-\section{Results}
+\begin{abstract}
+  This is an abstract. It makes every paper look very professional and coherent. I think it will boost our grade by at least two points.
 
+  However, if you write bullshit in here, you can be sure that any reader will read it, so you'd better be careful before writting anything here !
+\end{abstract}
+
+For clarity's sake, we have chosen to make a clear disinction between preprocessing tasks, which "clean" the data, and the regression fitting model. This distinction is made clear in our source code, each component being computed by a separate class.
+
+\part{Preprocessing}
+
+  A first look into the training data file showed us that, while some features or data lines were missing, others were useless or formatted in a way which made direct application of regression models impossible.
+
+  It therefore appeared that it was necessary to go through various preprocessing operations before fitting the data into a regression model. This was acheived by the preprocessing class, which handles the following tasks :
+
+    \subsubsection{Grouping data}
+
+    We first noticed that some entries in the training data set were given the same tuple (DATE,ASS\_ASSIGNEMENT), which meant they corresponded to different teams inside the same services. We then proceeded to group them together.
+
+    \subsubsection{Creating time features}
+
+    In the orginal data, date and time features are provided as strings, which is particularily unsuitable for regression. Hence, we chose to convert them into a standardized format, which was defined, as suggested by the assignment :
+      \begin{itemize}
+        \item time spent since epoch, in seconds (EPOCH)
+        \item time ellasped since start of the day, in seconds (START\_OF\_DAY)
+        \item month (MONTH)
+        \item week day (WEEKDAY)
+        \item holiday (HOLIDAY)
+        \item day off (DAY\_OFF)
+        \item week-end (WEEK\_END)
+        \item night/day (DAY\_NIGHT)
+      \end{itemize}
+
+    For the holiday and day off features, it was necessary to call a subsidiary function, isInHolday, which tested if the date was in a holiday. We provided this function a calendar, in the format of a .csv file, containing all holidays and days off in France for the years 2011-2013.
+
+    \subsubsection{Handling categorical features}
+
+    Categorical features are not well supported by regression models in {\tt scikit-learn}, we then needed to format them in a more convenient way. We decided, for each one of the for categorical features (ASS\_ASSIGNMENT, WEEKDAY, HOLIDAY, DAY\_OFF), to create a feature for every existing category, this feature taking its value in $\{0,1\}$. For instance, we changed the following lines
+    \begin{center}
+    {\footnotesize
+      \begin{tabular}{|c|c|c|}
+        \hline
+        WEEKDAY \\
+        \hline
+        Lundi \\
+        \hline
+        Mardi \\
+        \hline
+      \end{tabular}}
+    \end{center}
+    into :
+    \begin{center}
+      {\footnotesize
+        \begin{tabular}{|c|c|c|c|c|c|c|}
+          \hline
+          WEEKDAY\_1 & WEEKDAY\_2 & WEEKDAY\_3 & WEEKDAY\_4 & WEEKDAY\_5 & WEEKDAY\_6 & WEEKDAY\_7 \\
+          \hline
+          1 & 0 & 0 & 0 & 0 & 0 & 0 \\
+          \hline
+          0 & 1 & 0 & 0 & 0 & 0 & 0 \\
+          \hline
+        \end{tabular}
+      }
+    \end{center}
+
+    \subsubsection{Normalization}
+
+    After formatting date and time features, it was possible to normalize them, using the scaler object available in {\tt scikit-learn}. This is an important step in the preparation of the data before fitting it. Two features were normalized this ways : EPOCH and START\_OF\_DAY, which were numerical features. The others features in the dataset corresponding to categories, it was not relevent to normalize them.
+
+    \subsubsection{Handling missing lines}
+
+    Some lines appeared to be missing in the original dataset. We then inserted lines with undefined values, which could be handled by {\tt scikit-learn} regression algorithms.
+
+    \subsubsection{Selection}
+
+    Since only 18 assignments are present in the submission data, we chose only to retain those assignments, thus reducing the dimension of the data without losing any significant information.
+
+    We also deleted some redundant features, such as WEEKEND, whose information is contained in WEEKDAY features.
+
+
+\section{Regression}
+
+\part{Results}
 \section{Discussion}
 \end{document}
