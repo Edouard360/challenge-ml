@@ -10,6 +10,8 @@
 
 \usepackage{array}
 
+\usepackage{hyperref}
+
 % \usepackage{float}
 
 \usepackage{graphicx}
@@ -144,7 +146,10 @@ In this part, we discuss the heart of our program : the different regression mod
   \end{equation}
   where $y$ is the value of a given data sample $x$, and $\hat{y}$ is its predicted value.
 
-  Since this function will be used to judge the final results of the regression, it seemed interesting to us to implement this function as a possible criterion of the {\tt scikit-learn}. This tweak required to fork from the {\tt scikit-learn} repository and to modify the source files, written in a {\tt C++}-based language called cython in order to add an "lineEx" criterion option for the decision tree regressor.
+  Since this function will be used to judge the final results of the regression, it seemed interesting to us to implement this function as a possible criterion of the {\tt scikit-learn}. This tweak required to fork from the {\tt scikit-learn} repository and to modify the source files
+    \footnote{\label{note_git}The forked repository is available here : \url{https://github.com/Edouard360/scikit-learn/}}
+  , written in a {\tt C++}-based language called cython in order to add an "lineEx" criterion option for the decision tree regressor.
+
 
   However, comptutation of the loss functin over the whole data set required precision up to 60 digits over the values, which is not achievable by using {\tt double} (their precision is limited by their 64bit size). We then chose to use the MSE as the loss function to split the tree, but then using the linEx function to compute the node value. This method seemed to be an acceptable compromise between precision and computation cost (using 60-digit precision integers would multiply by four the computational time and memory cost). Figure \ref{tree_example} shows an example of a tree built using this methodology, as displayed with the {\tt export\_graphviz} function.
   \begin{figure}
@@ -164,7 +169,7 @@ In this part, we discuss the heart of our program : the different regression mod
     \begin{minipage}{0.48\linewidth}
       \centering
       \includegraphics[width=\textwidth]{graphics/forest.png}
-      \caption{Perforomance of random forests for various sizes}
+      \caption{Performance of random forests for various sizes}
       \label{forest}
     \end{minipage}
     \hfill
@@ -187,7 +192,7 @@ In this part, we discuss the heart of our program : the different regression mod
   \begin{figure}
     \centering
     \includegraphics[width=0.8\textwidth]{graphics/3-Time_series.png}
-    \caption{Evolution of the data with regards to the time}
+    \caption{Evolution of the data with regards to the time. The y-axis represents the number of calls plotted with regards to the time.}
     \label{time_series}
   \end{figure}
 
