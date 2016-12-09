@@ -138,19 +138,20 @@ In this part, we discuss the heart of our program : the different regression mod
       \label{splitting}
     \end{minipage}
   \end{figure}
-  By default, the available \ref{treePerf} criterions in {\tt scikit-learn} are Mean Square Estimator and Mean Absolute Estimator. However, in this assignment, the loss function used to compute the total error at the end is known as linEx, and is defined by :
+  By default, the available criterions in {\tt scikit-learn} are Mean Square Estimator and Mean Absolute Estimator. However, in this assignment, the loss function used to compute the total error at the end is known as linEx, and is defined by :
   \begin{equation}
     \text{linEx}(y,\hat{y}) = \exp \left( \alpha (y-\hat{y})\right) - \alpha (y-\hat{y}) -1
   \end{equation}
+  where $y$ is the value of a given data sample $x$, and $\hat{y}$ is its predicted value.
 
   Since this function will be used to judge the final results of the regression, it seemed interesting to us to implement this function as a possible criterion of the {\tt scikit-learn}. This tweak required to fork from the {\tt scikit-learn} repository and to modify the source files, written in a {\tt C++}-based language called cython in order to add an "lineEx" criterion option for the decision tree regressor.
 
   However, comptutation of the loss functin over the whole data set required precision up to 60 digits over the values, which is not achievable by using {\tt double} (their precision is limited by their 64bit size). We then chose to use the MSE as the loss function to split the tree, but then using the linEx function to compute the node value. This method seemed to be an acceptable compromise between precision and computation cost (using 60-digit precision integers would multiply by four the computational time and memory cost). Figure \ref{tree_example} shows an example of a tree built using this methodology, as displayed with the {\tt export\_graphviz} function.
   \begin{figure}
-    \label{tree_example}
     \centering
     \includegraphics[width=0.8\textwidth]{graphics/tree.png}
     \caption{An example of tree built with the linEx criterion}
+      \label{tree_example}
   \end{figure}
 
   \subsection{Use of decision trees}
